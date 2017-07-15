@@ -23,7 +23,7 @@ var app = {
     config: {
         "home":{
             "element1":{
-                "img":"img/animal.png",
+                "img":"img/animal.jpg",
                 "text":"",
                 "next":"animaux"
             },
