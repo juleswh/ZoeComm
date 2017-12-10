@@ -91,11 +91,12 @@ var app = {
     onDeviceReady: function() {
         this.receivedEvent('deviceready');
         var imgs=document.getElementsByClassName('img');
-        for (var i = 0; i < imgs.length; i++) {
+        var i;
+        for (i = 0; i < imgs.length; i++) {
             imgs[i].addEventListener('click', this.onImageClick.bind(this));
         }
         var backbtns=document.getElementsByClassName('back-btn');
-        for (var i = 0; i < backbtns.length; i++) {
+        for (i = 0; i < backbtns.length; i++) {
             backbtns[i].addEventListener('click', this.onBackButtonClick.bind(this));
         }
         
