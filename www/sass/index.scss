@@ -19,7 +19,6 @@ html, body
 .container
 {
     flex: 1;
-    border: solid;
 }
 
 #mainframe
@@ -59,8 +58,8 @@ html, body
 #end-image
 {
     object-fit: contain;
-    max-height: 100vh;
-    max-width: 100vw;
+    height: 100%;
+    width: 100%;
 }
 
 .back-btn
@@ -84,9 +83,8 @@ html, body
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    margin: 0;
-    padding: 2%;
-    border: solid 1px #fe1;
+    margin: 5%;
+    padding: 5%;
 }
 
 #music-container {
