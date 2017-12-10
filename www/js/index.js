@@ -61,6 +61,7 @@ var app = {
     activeElement: undefined,
     media: undefined,
     temp_elements: [],
+    nexts : {},
     // Application Constructor
     initialize: function() {
         if(!window.cordova){
@@ -85,12 +86,12 @@ var app = {
         for (i = 0; i < backbtns.length; i++) {
             backbtns[i].addEventListener('click', this.onBackButtonClick.bind(this));
         }
+        this.update();
         
     },
     
     onBackButtonClick: function(event) {
         if (this.trail.length > 0){
-            console.log("go back");
             this.goBack();
         }
     },
@@ -104,9 +105,10 @@ var app = {
 
     onImageClick: function(event) {
         element=event.currentTarget;
-        console.log(element.id+' in '+ this.currentPage +' links to '+this.config[this.currentPage][element.id].next);
+        console.log(element.id+' in '+ this.currentPage +' links to '+this.nexts[element.id]);
         this.trail.push(this.currentPage);
-        this.currentPage=this.config[this.currentPage][element.id].next;
+        this.currentPage=this.nexts[element.id];
+        this.nexts={};
         this.update();
     },
    
@@ -148,12 +150,12 @@ var app = {
         this.activeElement.style.display='flex';
         element1=document.getElementById("element1");
         element2=document.getElementById("element2");
+        this.nexts["element1"]=this.config[this.currentPage].element1.next;
+        this.nexts["element2"]=this.config[this.currentPage].element2.next;
         element1.style.display='flex'
         element2.style.display='flex'
         element1.textContent=this.config[this.currentPage].element1.text;
         element2.textContent=this.config[this.currentPage].element2.text;
-        //element1.setAttribute("src",this.config[this.currentPage].element1.img);
-        //element2.setAttribute("src",this.config[this.currentPage].element2.img);
         element1.style.backgroundImage='url("'+this.config[this.currentPage].element1.img+'")';
         element2.style.backgroundImage='url("'+this.config[this.currentPage].element2.img+'")';
     },
@@ -161,12 +163,12 @@ var app = {
     updateImageElements:function(){
         this.activeElement=document.getElementById('img-container');
         this.activeElement.style.display='flex';
-        console.log(this.config[this.currentPage].elements.length)
         for(var i=0; i<this.config[this.currentPage].elements.length;i++){
-            console.log(this.config[this.currentPage].elements[i].img);
             div=document.createElement("div");
-            div.class="img";
+            div.classList.add('img');
+            div.addEventListener('click', this.onImageClick.bind(this));
             div.id="elemen"+i;
+            this.nexts[div.id]=this.config[this.currentPage].elements[i].next;
             this.temp_elements.push(div.id)
             div.style.backgroundImage='url("'+this.config[this.currentPage].elements[i].img+'")';
             this.activeElement.appendChild(div);
@@ -175,12 +177,6 @@ var app = {
         element2=document.getElementById("element2");
         element1.style.display="none";
         element2.style.display="none";
-        //element1.textContent=this.config[this.currentPage].element1.text;
-        //element2.textContent=this.config[this.currentPage].element2.text;
-        ////element1.setAttribute("src",this.config[this.currentPage].element1.img);
-        ////element2.setAttribute("src",this.config[this.currentPage].element2.img);
-        //element1.style.backgroundImage='url("'+this.config[this.currentPage].element1.img+'")';
-        //element2.style.backgroundImage='url("'+this.config[this.currentPage].element2.img+'")';
     },
     
     // update the page with an end image:
