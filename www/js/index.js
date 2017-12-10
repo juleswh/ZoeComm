@@ -60,6 +60,7 @@ var app = {
     trail: [],
     activeElement: undefined,
     media: undefined,
+    temp_elements: [],
     // Application Constructor
     initialize: function() {
         if(!window.cordova){
@@ -114,6 +115,11 @@ var app = {
         this.activeElement.style.display="none";
         this.updateBackButton();
         if(this.media){this.media.stop();}
+        for ( i in this.temp_elements ) {
+            var elem=document.getElementById(this.temp_elements[i]);
+            elem.parentNode.removeChild(elem);
+        }
+        this.temp_elements.length=0;
         if (this.config[this.currentPage].element1){
             this.updateImageContainer();
         }else if(this.config[this.currentPage].elements){
@@ -142,6 +148,8 @@ var app = {
         this.activeElement.style.display='flex';
         element1=document.getElementById("element1");
         element2=document.getElementById("element2");
+        element1.style.display='flex'
+        element2.style.display='flex'
         element1.textContent=this.config[this.currentPage].element1.text;
         element2.textContent=this.config[this.currentPage].element2.text;
         //element1.setAttribute("src",this.config[this.currentPage].element1.img);
@@ -159,6 +167,7 @@ var app = {
             div=document.createElement("div");
             div.class="img";
             div.id="elemen"+i;
+            this.temp_elements.push(div.id)
             div.style.backgroundImage='url("'+this.config[this.currentPage].elements[i].img+'")';
             this.activeElement.appendChild(div);
         }
