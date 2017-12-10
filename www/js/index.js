@@ -1,21 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app = {
     //a json-formated configuration
     //TODO: document this well
@@ -34,16 +16,19 @@ var app = {
             }
         },
         "animaux":{
-            "element1":{
-                "img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Chat_mi-long.jpg",
-                "text":"",
-                "next":"chats"
-            },
-            "element2":{
-                "img":"https://upload.wikimedia.org/wikipedia/commons/d/d5/Vulpes_vulpes_sitting.jpg",
-                "text":"",
-                "next":"renard"
-            }
+            'elements':
+                [
+                {
+                    "img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Chat_mi-long.jpg",
+                    "text":"",
+                    "next":"chats"
+                },
+                {
+                    "img":"https://upload.wikimedia.org/wikipedia/commons/d/d5/Vulpes_vulpes_sitting.jpg",
+                    "text":"",
+                    "next":"renard"
+                }
+            ]
         },
         "chats":{
             "img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Chat_mi-long.jpg"
@@ -60,21 +45,21 @@ var app = {
             "element2":{
                 "img":"http://placehold.it/1000x1000",
                 "text":"",
-                "next":"classic"
+                "next":"reggae"
             }
         },
-        "rock":{
-            //"youtube":"https://www.youtube.com/embed/D_JxMb8RLEY"
-            "youtube":"http://news.google.com/"
+        "reggae":{
+            'src': 'http://chai5she.cdn.dvmr.fr/fip-webradio6.mp3'
         },
-        "classic":{
-            "src":''
+        "rock":{
+            "src":'http://chai5she.cdn.dvmr.fr/fip-webradio1.mp3'
         }
     },
     
     currentPage:"home",
     trail: [],
     activeElement: undefined,
+    media: undefined,
     // Application Constructor
     initialize: function() {
         if(!window.cordova){
@@ -127,8 +112,12 @@ var app = {
     // update the page when an object is clicked, according to the config
     update: function() {
         this.activeElement.style.display="none";
+        this.updateBackButton();
+        if(this.media){this.media.stop();}
         if (this.config[this.currentPage].element1){
             this.updateImageContainer();
+        }else if(this.config[this.currentPage].elements){
+            this.updateImageElements();
         }else if (this.config[this.currentPage].img){
             this.updateImage();
         }else if (this.config[this.currentPage].src){
@@ -138,6 +127,13 @@ var app = {
         }
     },
 
+    updateBackButton: function(){
+        if(this.trail.length == 0){
+            document.getElementById("back-btn").style.display="none";
+        }else{
+            document.getElementById("back-btn").style.display="block";
+        }
+    },
     // update the page with a grid of pictures
     // TODO: for now only 2 elements allowed
     // TODO: return policy
@@ -152,6 +148,30 @@ var app = {
         //element2.setAttribute("src",this.config[this.currentPage].element2.img);
         element1.style.backgroundImage='url("'+this.config[this.currentPage].element1.img+'")';
         element2.style.backgroundImage='url("'+this.config[this.currentPage].element2.img+'")';
+    },
+
+    updateImageElements:function(){
+        this.activeElement=document.getElementById('img-container');
+        this.activeElement.style.display='flex';
+        console.log(this.config[this.currentPage].elements.length)
+        for(var i=0; i<this.config[this.currentPage].elements.length;i++){
+            console.log(this.config[this.currentPage].elements[i].img);
+            div=document.createElement("div");
+            div.class="img";
+            div.id="elemen"+i;
+            div.style.backgroundImage='url("'+this.config[this.currentPage].elements[i].img+'")';
+            this.activeElement.appendChild(div);
+        }
+        element1=document.getElementById("element1");
+        element2=document.getElementById("element2");
+        element1.style.display="none";
+        element2.style.display="none";
+        //element1.textContent=this.config[this.currentPage].element1.text;
+        //element2.textContent=this.config[this.currentPage].element2.text;
+        ////element1.setAttribute("src",this.config[this.currentPage].element1.img);
+        ////element2.setAttribute("src",this.config[this.currentPage].element2.img);
+        //element1.style.backgroundImage='url("'+this.config[this.currentPage].element1.img+'")';
+        //element2.style.backgroundImage='url("'+this.config[this.currentPage].element2.img+'")';
     },
     
     // update the page with an end image:
@@ -168,7 +188,13 @@ var app = {
         this.activeElement=document.getElementById("music-container");
         this.activeElement.style.display="flex";
 
-        document.getElementById("audio-source").setAttribute("src",this.config[this.currentPage].src);
+        console.log('media:');
+        console.log(Media);
+        if(this.media){ delete this.media;}
+        this.media = new Media(this.config[this.currentPage].src);
+        this.media.play();
+
+        //document.getElementById("audio-source").setAttribute("src",this.config[this.currentPage].src);
     },
     
     updateYoutube: function(){
