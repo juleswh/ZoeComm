@@ -101,16 +101,18 @@ var app = {
     //TODO: read from file
     config: {
         "home":{
-            "element1":{
-                "img":"img/animal.jpg",
-                "text":"",
-                "next":"animaux"
-            },
-            "element2":{
-                "img":"http://placehold.it/650x800",
-                "text":"",
-                "next":"music"
-            }
+            'elements': [
+                {
+                    "img":"img/animal.jpg",
+                    "text":"",
+                    "next":"animaux"
+                },
+                {
+                    "img":"http://placehold.it/650x800",
+                    "text":"",
+                    "next":"music"
+                }
+            ]
         },
         "animaux":{
             'elements':
@@ -134,16 +136,19 @@ var app = {
             "img":"img/renard.jpg"
         },
         "music":{
-            "element1":{
-                "img":"http://placehold.it/600x200",
-                "text":"",
-                "next":"rock"
-            },
-            "element2":{
-                "img":"http://placehold.it/1000x1000",
-                "text":"",
-                "next":"reggae"
-            }
+            "elements":
+                [
+                {
+                    "img":"http://placehold.it/600x200",
+                    "text":"",
+                    "next":"rock"
+                },
+                {
+                    "img":"http://placehold.it/1000x1000",
+                    "text":"",
+                    "next":"reggae"
+                }
+            ]
         },
         "reggae":{
             'src': 'http://chai5she.cdn.dvmr.fr/fip-webradio6.mp3'
@@ -191,7 +196,7 @@ var app = {
     },
 
     preLoadImages: function (obj){
-        console.log("preload Images"+JSON.stringify(obj));
+        //console.log("preload Images"+JSON.stringify(obj));
         for (var key in obj){
             if (obj.hasOwnProperty(key)){
                 if(key=="img"){
@@ -200,7 +205,7 @@ var app = {
                         this.images[obj[key]].src=this.translateUri(obj[key]);
                     }
                 }else if (typeof obj[key] == 'object'){
-                    console.log(key);
+                    //console.log(key);
                     this.preLoadImages(obj[key]);
                 }
             }
@@ -277,9 +282,7 @@ var app = {
             elem.parentNode.removeChild(elem);
         }
         this.temp_elements.length=0;
-        if (this.config[this.currentPage].element1){
-            this.updateImageContainer();
-        }else if(this.config[this.currentPage].elements){
+        if(this.config[this.currentPage].elements){
             this.updateImageElements();
         }else if (this.config[this.currentPage].img){
             this.updateImage();
@@ -296,23 +299,6 @@ var app = {
         }else{
             document.getElementById("back-btn").style.display="block";
         }
-    },
-    // update the page with a grid of pictures
-    // TODO: for now only 2 elements allowed
-    // TODO: return policy
-    updateImageContainer: function(){
-        this.activeElement=document.getElementById('img-container');
-        this.activeElement.style.display='flex';
-        element1=document.getElementById("element1");
-        element2=document.getElementById("element2");
-        this.nexts["element1"]=this.config[this.currentPage].element1.next;
-        this.nexts["element2"]=this.config[this.currentPage].element2.next;
-        element1.style.display='flex'
-        element2.style.display='flex'
-        element1.textContent=this.config[this.currentPage].element1.text;
-        element2.textContent=this.config[this.currentPage].element2.text;
-        element1.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].element1.img)+'")';
-        element2.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].element2.img)+'")';
     },
 
     updateImageElements:function(){
