@@ -1,3 +1,100 @@
+
+function onErrorReadFile(err){
+}
+function onErrorGetDir(err) {}
+
+function onErrorCreateFile(err) {}
+function onErrorLoadFs(err){
+    console.log("load fs error");
+}
+
+const readFile = (fileEntry) =>
+    new Promise((resolve,reject) => {
+
+        //console.log("readFile fileEntry=");
+        //console.log(fileEntry);
+    fileEntry.file(function (file) {
+        var reader = new FileReader();
+
+        reader.onloadend = function() {
+            //console.log("Successful file read: ");
+            //console.log(fileEntry.fullPath + ": " + this.result);
+            var dataObj=JSON.parse(this.result);
+            resolve(dataObj);
+        };
+        reader.readAsText(file);
+    }, reject);
+});
+
+
+function writeFile(fileEntry, dataObj,successCallback) {
+    // Create a FileWriter object for our FileEntry (log.txt).
+    //console.log("writeFile -> fileEntry:");
+    //console.log(fileEntry);
+    fileEntry.createWriter(function (fileWriter) {
+
+        fileWriter.onwriteend = function() {
+            //console.log();
+            //console.log("Successful file write: "+fileEntry.fullPath);
+            //readFile(fileEntry);
+            successCallback();
+        };
+
+        fileWriter.onerror = function (e) {
+            //console.log("Failed file write: " + e.toString());
+        };
+
+        // If data object is not passed in,
+        // create a new Blob instead.
+        if (!dataObj) {
+            dataObj = new Blob(['some file data'], { type: 'text/plain' });
+        }
+
+        fileWriter.write(dataObj);
+    });
+}
+
+function createFile(dirEntry, fileName) {
+    // Creates a new file or returns the file if it already exists.
+    dirEntry.getFile(fileName, {create: true, exclusive: false}, function(fileEntry) {
+
+        writeFile(fileEntry, null);
+
+    }, onErrorCreateFile);
+
+}
+const saveFile = (dirEntry, fileData, fileName) => 
+    new Promise((resolve,reject) => {
+        //console.log("saveFile "+dirEntry.name+"/"+fileName);
+        dirEntry.getFile(fileName, { create: true, exclusive: true }, //path must not exist
+            fileEntry => writeFile(fileEntry, fileData, resolve),
+            e=> reject(e));
+    });
+
+const createDirectory = (rootDirEntry,directoryName) =>
+    new Promise((resolve,reject) => {
+        //console.log("createDirectory "+rootDirEntry.name+"/"+directoryName);
+        rootDirEntry.getDirectory(directoryName, { create: true },
+            dirEntry => resolve(dirEntry),
+            e => reject(`Failed to create directory ${directoryName} in ${rootDirEntry.name}`)
+            );
+    });
+
+/**
+ * Resolve the fileEntry for a path
+ * @param  {String} filePath Path
+ * @return {FileEntry}       Resolved fileEntry
+ */
+const resolveLocalFileSystemURL = (filePath) =>
+    new Promise((resolve, reject) => {
+        //console.log("resolveLocalFileSystemURL "+filePath);
+        window.resolveLocalFileSystemURL(
+            filePath,
+            fileEntry => resolve(fileEntry),
+            e => reject(`Failed to resolve URL for path ${filePath}: ${JSON.stringify(e)}`)
+        );
+});
+
 var app = {
     //a json-formated configuration
     //TODO: document this well
@@ -19,22 +116,22 @@ var app = {
             'elements':
                 [
                 {
-                    "img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Chat_mi-long.jpg",
+                    "img":"img/chats.jpg",
                     "text":"",
                     "next":"chats"
                 },
                 {
-                    "img":"https://upload.wikimedia.org/wikipedia/commons/d/d5/Vulpes_vulpes_sitting.jpg",
+                    "img":"img/renard.jpg",
                     "text":"",
                     "next":"renard"
                 }
             ]
         },
         "chats":{
-            "img":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Chat_mi-long.jpg"
+            "img":"img/chats.jpg"
         },
         "renard":{
-            "img":"https://upload.wikimedia.org/wikipedia/commons/d/d5/Vulpes_vulpes_sitting.jpg"
+            "img":"img/renard.jpg"
         },
         "music":{
             "element1":{
@@ -56,27 +153,77 @@ var app = {
         }
     },
     
+    basePath: "",
     currentPage:"home",
     trail: [],
     activeElement: undefined,
     media: undefined,
     temp_elements: [],
     nexts : {},
+    images :{},
+
     // Application Constructor
     initialize: function() {
         if(!window.cordova){
-            this.onDeviceReady();
+            //this.onDeviceReady();
+            this.receivedEvent('deviceready');
+            this.start();
         }else{
             document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
         }
     },
+    writeConfigFile: function() {
+        return resolveLocalFileSystemURL(cordova.file.externalRootDirectory)
+            .then(fileEntry => createDirectory(fileEntry,"ZoeComm"))
+            .then(() => resolveLocalFileSystemURL(this.basePath))
+            .then(dirEntry => saveFile(dirEntry, new Blob([JSON.stringify(this.config,null,'\t')],{type:"application/json"}),"config.json"))
+            .then(null, fileErr => { if (fileErr.code == FileError.PATH_EXISTS_ERR) { return this.getConfigFile(); } else {console.log("Error while writing config.json");throw fileErr;}})
+            .catch(err => {console.log("error while writing the configuration file : "+err); console.log(err);});
+    },
 
+    getConfigFile: function(){
+        //console.log("get config file, before:");
+        //console.log(this.config);
+        return resolveLocalFileSystemURL(this.basePath+"config.json")
+            .then(fileEntry => readFile(fileEntry))
+            .then(dataObj => { this.config = dataObj; /*console.log("read file, got:");console.log(this.config);*/})
+            .catch(err => console.log("error while reading the configuration file : " +err));
+    },
+
+    preLoadImages: function (obj){
+        console.log("preload Images"+JSON.stringify(obj));
+        for (var key in obj){
+            if (obj.hasOwnProperty(key)){
+                if(key=="img"){
+                    if(! this.images.hasOwnProperty(obj[key])){
+                        this.images[obj[key]]=new Image();
+                        this.images[obj[key]].src=this.translateUri(obj[key]);
+                    }
+                }else if (typeof obj[key] == 'object'){
+                    console.log(key);
+                    this.preLoadImages(obj[key]);
+                }
+            }
+        }
+    },
     // deviceready Event Handler
     //
     // Bind any cordova events here. Common events are:
     // 'pause', 'resume', etc.
     onDeviceReady: function() {
+        //console.log("cordova.file:");
+        //console.log(cordova.file);
+        //console.log(cordova.file.externalRootDirectory);
+        //console.log(Media);
+        this.basePath = cordova.file.externalRootDirectory+'/ZoeComm/';
         this.receivedEvent('deviceready');
+        //this.getConfigFile();
+        this.writeConfigFile().then(() => this.start());
+    },
+
+    start: function () {
+        this.preLoadImages(this.config);
+        //console.log("files should have been created now");
         var imgs=document.getElementsByClassName('img');
         var i;
         for (i = 0; i < imgs.length; i++) {
@@ -89,6 +236,14 @@ var app = {
         this.update();
         
     },
+     
+    translateUri: function (original) {
+        if (original.search("://") > 0){
+            return original;
+        }else{
+            return this.basePath+original;
+        }
+    },
     
     onBackButtonClick: function(event) {
         if (this.trail.length > 0){
@@ -97,15 +252,15 @@ var app = {
     },
 
     goBack: function() {
-        console.log(this.trail);
+        //console.log(this.trail);
         this.currentPage=this.trail.pop();
-        console.log(this.currentPage);
+        //console.log(this.currentPage);
         this.update();
     },
 
     onImageClick: function(event) {
         element=event.currentTarget;
-        console.log(element.id+' in '+ this.currentPage +' links to '+this.nexts[element.id]);
+        //console.log(element.id+' in '+ this.currentPage +' links to '+this.nexts[element.id]);
         this.trail.push(this.currentPage);
         this.currentPage=this.nexts[element.id];
         this.nexts={};
@@ -156,8 +311,8 @@ var app = {
         element2.style.display='flex'
         element1.textContent=this.config[this.currentPage].element1.text;
         element2.textContent=this.config[this.currentPage].element2.text;
-        element1.style.backgroundImage='url("'+this.config[this.currentPage].element1.img+'")';
-        element2.style.backgroundImage='url("'+this.config[this.currentPage].element2.img+'")';
+        element1.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].element1.img)+'")';
+        element2.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].element2.img)+'")';
     },
 
     updateImageElements:function(){
@@ -170,7 +325,7 @@ var app = {
             div.id="elemen"+i;
             this.nexts[div.id]=this.config[this.currentPage].elements[i].next;
             this.temp_elements.push(div.id)
-            div.style.backgroundImage='url("'+this.config[this.currentPage].elements[i].img+'")';
+            div.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].elements[i].img)+'")';
             this.activeElement.appendChild(div);
         }
         element1=document.getElementById("element1");
@@ -186,15 +341,28 @@ var app = {
         this.activeElement=document.getElementById("end-img-container");
         this.activeElement.style.display="flex";
         imgElement=document.getElementById("end-image");
-        imgElement.setAttribute("src",this.config[this.currentPage].img);
+        imgElement.setAttribute("src",this.translateUri(this.config[this.currentPage].img));
+    },
+
+    loadJSON(path) {   
+        var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', path, false);
+        xobj.onreadystatechange = function () {
+            if (xobj.readyState == 4 && xobj.status == "200") {
+                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);  
     },
 
     updateMusic: function(){
         this.activeElement=document.getElementById("music-container");
         this.activeElement.style.display="flex";
 
-        console.log('media:');
-        console.log(Media);
+        //console.log('media:');
+        //console.log(Media);
         if(this.media){ delete this.media;}
         this.media = new Media(this.config[this.currentPage].src);
         this.media.play();
@@ -221,7 +389,7 @@ var app = {
         this.activeElement=receivedElement;
         this.update();
 
-        console.log('Received Event: ' + id);
+        //console.log('Received Event: ' + id);
     }
 };
 

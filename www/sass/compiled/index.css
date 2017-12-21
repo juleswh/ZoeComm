@@ -7,7 +7,7 @@ body {
   /* prevent copy paste, to allow, change 'none' to 'text' */
   font-family: 'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
   font-size: 40px;
-  background-color: #AEAEAE; }
+  background-color: #665F57; }
 
 html, body {
   width: 100vw;
@@ -68,7 +68,8 @@ html, body {
   background-repeat: no-repeat;
   background-position: center;
   margin: 5%;
-  padding: 5%; }
+  padding: 5%;
+  border: 5px solid red; }
 
 #music-container {
   display: none;

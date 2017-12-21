@@ -1,10 +1,13 @@
+$backbtn-color: #FF0000;
+$bkg-color: #665F57;
+
 body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
     font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
     font-size:40px;
-    background-color: #AEAEAE;
+    background-color: $bkg-color;
 }
 
 html, body
@@ -65,7 +68,7 @@ html, body
 .back-btn
 {
     flex: 0 0 10%;
-    background-color: #FF0000;
+    background-color: $backbtn-color;
     margin: 0 10px 0 0;
 }
 
@@ -85,6 +88,7 @@ html, body
     background-position: center;
     margin: 5%;
     padding: 5%;
+    border: 5px solid red;
 }
 
 #music-container {
