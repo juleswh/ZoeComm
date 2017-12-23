@@ -95,11 +95,31 @@ const resolveLocalFileSystemURL = (filePath) =>
         );
 });
 
+function imageDim(image_nb) {
+    var elem=document.getElementById("img-list");
+    var width=elem.clientWidth;
+    var height=elem.clientHeight;
+    var n = image_nb + image_nb % 2;
+    var maxd=Math.sqrt(width*height*0.95/n);
+    return maxd*0.95;
+}
+
+function resizeImages() {
+    var cells=document.getElementsByClassName("cell");
+    var maxd=imageDim(cells.length);
+    for (var i=0 ; i<cells.length;++i){
+        cells[i].style.maxWidth=''+maxd+'px';
+        cells[i].style.minWidth=''+maxd*0.9+'px';
+        cells[i].style.maxHeight=''+maxd+'px';
+    }
+}
+
 var app = {
     //a json-formated configuration
     //TODO: document this well
     //TODO: read from file
     config: {
+        'back-btn-width':'2cm',
         "home":{
             'elements': [
                 {
@@ -111,6 +131,11 @@ var app = {
                     "img":"http://placehold.it/650x800",
                     "text":"",
                     "next":"music"
+                },
+                {
+                    "img":"img/renard.jpg",
+                    "text":"",
+                    "next":"renard"
                 }
             ]
         },
@@ -139,7 +164,7 @@ var app = {
             "elements":
                 [
                 {
-                    "img":"http://placehold.it/600x200",
+                    "img":"img/rock.jpg",
                     "text":"",
                     "next":"rock"
                 },
@@ -227,6 +252,7 @@ var app = {
     },
 
     start: function () {
+        window.addEventListener('resize',resizeImages,false);
         this.preLoadImages(this.config);
         //console.log("files should have been created now");
         var imgs=document.getElementsByClassName('img');
@@ -234,9 +260,13 @@ var app = {
         for (i = 0; i < imgs.length; i++) {
             imgs[i].addEventListener('click', this.onImageClick.bind(this));
         }
+        var backbtnwidth=this.config['back-btn-width'];
         var backbtns=document.getElementsByClassName('back-btn');
         for (i = 0; i < backbtns.length; i++) {
             backbtns[i].addEventListener('click', this.onBackButtonClick.bind(this));
+            if(backbtnwidth){
+                backbtns[i].style.minWidth=backbtnwidth;
+            }
         }
         this.update();
         
@@ -252,6 +282,7 @@ var app = {
     
     onBackButtonClick: function(event) {
         if (this.trail.length > 0){
+            navigator.vibrate(100);
             this.goBack();
         }
     },
@@ -264,6 +295,7 @@ var app = {
     },
 
     onImageClick: function(event) {
+        navigator.vibrate(100);
         element=event.currentTarget;
         //console.log(element.id+' in '+ this.currentPage +' links to '+this.nexts[element.id]);
         this.trail.push(this.currentPage);
@@ -276,7 +308,7 @@ var app = {
     update: function() {
         this.activeElement.style.display="none";
         this.updateBackButton();
-        if(this.media){this.media.stop();}
+        if(this.media){this.media.stop(); this.media.release();}
         for ( i in this.temp_elements ) {
             var elem=document.getElementById(this.temp_elements[i]);
             elem.parentNode.removeChild(elem);
@@ -302,22 +334,39 @@ var app = {
     },
 
     updateImageElements:function(){
-        this.activeElement=document.getElementById('img-container');
+        this.activeElement=document.getElementById('img-list');
         this.activeElement.style.display='flex';
+        var maxd=imageDim(this.config[this.currentPage].elements.length);
         for(var i=0; i<this.config[this.currentPage].elements.length;i++){
-            div=document.createElement("div");
-            div.classList.add('img');
-            div.addEventListener('click', this.onImageClick.bind(this));
-            div.id="elemen"+i;
-            this.nexts[div.id]=this.config[this.currentPage].elements[i].next;
+            div=document.createElement("li");
+            div.classList.add('cell');
+            div.id="cell"+i;
+            helper=document.createElement('span');
+            helper.classList.add('helper');
+            //spacer=document.createElement('div');
+            //spacer.classList.add('spacer');
+            //spacer.id='spacer'+i;
+            img=document.createElement('img');
+            img.id="element"+i;
+            img.classList.add('img');
+            img.addEventListener('click', this.onImageClick.bind(this));
+            div.style.maxWidth = ''+maxd+'px';
+            div.style.maxHeight = ''+maxd+'px';
+            div.style.minWidth = ''+maxd*0.9+'px';
+            this.nexts[img.id]=this.config[this.currentPage].elements[i].next;
             this.temp_elements.push(div.id)
-            div.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].elements[i].img)+'")';
+            //this.temp_elements.push(spacer.id)
+            //div.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].elements[i].img)+'")';
+            img.src=this.translateUri(this.config[this.currentPage].elements[i].img);
+            div.appendChild(helper);
+            div.appendChild(img);
             this.activeElement.appendChild(div);
+            //this.activeElement.appendChild(spacer);
         }
-        element1=document.getElementById("element1");
-        element2=document.getElementById("element2");
-        element1.style.display="none";
-        element2.style.display="none";
+        //var i=this.temp_elements.length-1;
+        //last_spacer=document.getElementById(this.temp_elements[i]);
+        //last_spacer.parentNode.removeChild(last_spacer);
+        //this.temp_elements.length=i;
     },
     
     // update the page with an end image:
@@ -349,7 +398,7 @@ var app = {
 
         //console.log('media:');
         //console.log(Media);
-        if(this.media){ delete this.media;}
+        if(this.media){ this.media.release(); delete this.media;}
         this.media = new Media(this.config[this.currentPage].src);
         this.media.play();
 
@@ -367,7 +416,7 @@ var app = {
     receivedEvent: function(id) {
         var parentElement = document.getElementById(id);
         var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = document.querySelector('#img-container');
+        var receivedElement = document.querySelector('#img-list');
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:flex;');
