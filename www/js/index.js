@@ -195,7 +195,8 @@ var app = {
     // Application Constructor
     initialize: function() {
         if(!window.cordova){
-            //this.onDeviceReady();
+            console.log("out of a cordova app");
+            if(localconfig){this.config = localconfig; console.log("loaded local config");}
             this.receivedEvent('deviceready');
             this.start();
         }else{
