@@ -18,16 +18,16 @@ html, body
 
 .container
 {
-    flex: 1;
+/*     flex: 1; */
     /*border: solid;*/
 }
 
 #mainframe
 {
-    display: flex;
-    flex-wrap: no-wrap;
-    flex-direction: row;
-    justify-content: flex-start;
+    display: block;
+/*     flex-wrap: no-wrap; */
+/*     flex-direction: row; */
+/*     justify-content: flex-start; */
     align-items: stretch;
     align-content: stretch;
     width:100%;
@@ -38,8 +38,8 @@ html, body
 #img-container
 {
     display: none;
-    flex-wrap: wrap;
-    flex-direction: row;
+/*     flex-wrap: wrap; */
+/*     flex-direction: row; */
     justify-content: space-around;
     align-items: stretch;
     align-content: stretch;
@@ -50,8 +50,8 @@ html, body
 #end-img-container
 {
     display: none;
-    flex-wrap: wrap;
-    justify-content: space-around;
+/*     flex-wrap: wrap; */
+/*     justify-content: space-around; */
     height: auto;
     width: auto;
 }
@@ -65,7 +65,7 @@ html, body
 
 .back-btn
 {
-    flex: 0 0 10%;
+/*     flex: 0 0 10%; */
     background-color: #FF0000;
     margin: 0 10px 0 0;
 }
@@ -77,7 +77,7 @@ html, body
 }
 
 .img {
-    flex: 1;
+/*     flex: 1; */
     max-width: 100%;
     max-height: 100%;
     min-width: 100px;
@@ -91,7 +91,7 @@ html, body
 
 #music-container {
     display: none;
-    flex-wrap: wrap;
+/*     flex-wrap: wrap; */
     background-color: #fea;
 }
 

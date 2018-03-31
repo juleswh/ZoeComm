@@ -1,41 +1,15 @@
 {
-    "name": "ZoeComm",
-    "displayName": "ZoeComm",
-    "version": "0.0.1",
-    "description": "A simple to use communication tool for non-verbal persons",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "Jules Waldhart, Martin Conant",
-    "license": "GNU GPLv3",
-    "dependencies": {
-        "cordova-android": "~5.0.0",
-        "cordova-ubuntu": "~4.3.4",
-        "cordova-plugin-whitelist": "~1.3.2",
-        "cordova-browser": "~4.1.0",
-        "cordova-plugin-media": "~2.4.1",
-        "cordova-plugin-file": "~4.3.3",
-        "cordova-plugin-compat": "~1.1.0"
-    },
-    "cordova": {
-        "plugins": {
-            "cordova-plugin-whitelist": {}
-        },
-        "platforms": [
-            "android",
-            "browser",
-            "ubuntu"
-        ]
-    },
-    "devDependencies": {
-        "browser-sync": "^2.18.12",
-        "gulp": "^3.9.1",
-        "gulp-inject": "^4.2.0",
-        "gulp-jshint": "^2.0.4",
-        "gulp-livereload": "^3.8.1",
-        "gulp-sass": "^3.1.0",
-        "jshint": "^2.9.5",
-        "run-sequence": "^2.0.0"
-    }
+  "name": "fr.waldhart.zoecomm",
+  "version": "1.0.0",
+  "displayName": "ZoeComm",
+  "cordova": {
+    "platforms": [
+      "android",
+      "browser"
+    ]
+  },
+  "dependencies": {
+    "cordova-android": "~5.0.0",
+    "cordova-browser": "^4.1.0"
+  }
 }

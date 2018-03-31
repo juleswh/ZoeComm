@@ -336,7 +336,7 @@ var app = {
 
     updateImageElements:function(){
         this.activeElement=document.getElementById('img-list');
-        this.activeElement.style.display='flex';
+        this.activeElement.style.display='inline-block';
         var maxd=imageDim(this.config[this.currentPage].elements.length);
         for(var i=0; i<this.config[this.currentPage].elements.length;i++){
             div=document.createElement("li");
@@ -375,7 +375,7 @@ var app = {
     // TODO: return policy
     updateImage: function(){
         this.activeElement=document.getElementById("end-img-container");
-        this.activeElement.style.display="flex";
+        this.activeElement.style.display="inline-block";
         imgElement=document.getElementById("end-image");
         imgElement.setAttribute("src",this.translateUri(this.config[this.currentPage].img));
     },
@@ -395,7 +395,7 @@ var app = {
 
     updateMusic: function(){
         this.activeElement=document.getElementById("music-container");
-        this.activeElement.style.display="flex";
+        this.activeElement.style.display="inline-block";
 
         //console.log('media:');
         //console.log(Media);
@@ -408,7 +408,7 @@ var app = {
     
     updateYoutube: function(){
         this.activeElement=document.getElementById("youtube-container");
-        this.activeElement.style.display="flex";
+        this.activeElement.style.display="inline-block";
 
         document.getElementById("youtube-frame").setAttribute("src",this.config[this.currentPage].youtube);
     },
@@ -420,7 +420,7 @@ var app = {
         var receivedElement = document.querySelector('#img-list');
 
         listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:flex;');
+        receivedElement.setAttribute('style', 'display:inline-block;');
         
         this.activeElement=receivedElement;
         this.update();
