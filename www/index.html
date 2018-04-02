@@ -16,25 +16,28 @@
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
         <link rel="stylesheet" type="text/css" href="sass/compiled/index.css">
+        <link rel="stylesheet" type="text/css" href="css/grid.css">
         <title>ZoeComm</title>
     </head>
     <body>
-    <div id="mainframe">
-        <div id="back-btn" class="back-btn"></div>
+    <div id="mainframe" class="grid fill">
         <div id="deviceready" class="blink">
             <p class="event listening">Connecting to Device</p>
         </div>
-       <ul id="img-list">
-       </ul>
-       <div id="end-img-container" class="container">
-           <img id="end-image"/>
-       </div>
-       <div id="youtube-container" class="container">
-       </div>
-       <div id="music-container" class="container">
-       </div>
-       <div id="player">Stop</div>
-       <!--script type="text/javascript" src="config.json"></script-->
+        <div id="back-btn" class="back-btn col-1-8"><!--back--></div>
+        <div id="img-list-container" class="col-7-8" style="height: 100%;">
+            <div id="img-list" class="container grid fill">
+            </div>
+            <div id="end-img-container" class="container fill">
+                <img id="end-image" class="img"/>
+            </div>
+            <div id="youtube-container" class="container fill">
+            </div>
+            <div id="music-container" class="container fill">
+            </div>
+            <div id="player">Stop</div>
+        </div>
+        <!--script type="text/javascript" src="config.json"></script-->
        <script type="text/javascript" src="cordova.js"></script>
        <script type="text/javascript" src="js/index.js"></script>
    </div>

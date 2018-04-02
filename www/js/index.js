@@ -96,22 +96,43 @@ const resolveLocalFileSystemURL = (filePath) =>
 });
 
 function imageDim(image_nb) {
-    var elem=document.getElementById("img-list");
+    /*var elem=document.getElementById("img-list");
     var width=elem.clientWidth;
     var height=elem.clientHeight;
     var n = image_nb + image_nb % 2;
     var maxd=Math.sqrt(width*height*0.95/n);
-    return maxd*0.95;
+    */
+    maxd=imageDimSquare(image_nb)[0];
+    return maxd;
 }
 
-function resizeImages() {
-    var cells=document.getElementsByClassName("cell");
-    var maxd=imageDim(cells.length);
-    for (var i=0 ; i<cells.length;++i){
-        cells[i].style.maxWidth=''+maxd+'px';
-        cells[i].style.minWidth=''+maxd*0.9+'px';
-        cells[i].style.maxHeight=''+maxd+'px';
+function imageDimSquare(n) {
+    var elem=document.getElementById("img-list");
+    var w=elem.clientWidth;
+    var h=elem.clientHeight;
+    var l0=Math.sqrt(w*h/n);
+    var c0=Math.ceil(w/l0);
+    var r0=Math.ceil(h/l0);
+    var d1=[c0,Math.ceil(n/c0)];
+    var d2=[Math.ceil(n/r0),r0];
+    //console.log("h="+h+ "w"+w);
+    //console.log("d1="+d1+"  d2="+d2);
+    var l_= 0.;
+    var d_= [0.,0.];
+    for (i in [d1,d2]){
+        d=[d1,d2][i];
+        //console.log("d="+d);
+        var lw=w/d[0];
+        var lh=h/d[1];
+        var lm=Math.min(lw,lh);
+        //console.log([lh,lw]);
+        //console.log(lm);
+        if (lm > l_){
+            d_=d;
+            l_=lm;
+        }
     }
+    return [l_,d_];
 }
 
 var app = {
@@ -196,7 +217,7 @@ var app = {
     initialize: function() {
         if(!window.cordova){
             console.log("out of a cordova app");
-            if(localconfig){this.config = localconfig; console.log("loaded local config");}
+            //if(localconfig){this.config = localconfig; console.log("loaded local config");}
             this.receivedEvent('deviceready');
             this.start();
         }else{
@@ -253,10 +274,10 @@ var app = {
     },
 
     start: function () {
-        window.addEventListener('resize',resizeImages,false);
+        window.addEventListener('resize',this.resizeImages.bind(this),false);
         this.preLoadImages(this.config);
         //console.log("files should have been created now");
-        var imgs=document.getElementsByClassName('img');
+        var imgs=document.getElementsByClassName('click-img');
         var i;
         for (i = 0; i < imgs.length; i++) {
             imgs[i].addEventListener('click', this.onImageClick.bind(this));
@@ -334,33 +355,59 @@ var app = {
         }
     },
 
+    resizeImages: function() {
+        var backbtn_width = document.getElementById("back-btn").offsetWidth;
+        var imgcontain_width=(Math.floor(document.getElementById("mainframe").clientWidth) - Math.ceil(backbtn_width))*0.99;
+        document.getElementById("img-list-container").style.width=imgcontain_width+"px";
+
+        var cells=document.getElementsByClassName("col-");
+        var dimensions=imageDimSquare(cells.length);
+        var dim=dimensions[1];
+        for (var i=0 ; i<cells.length;++i){
+            cells[i].style.width=100/dim[0]+"%";
+            cells[i].style.height=100/dim[1]+"%";
+        }
+    },
+
     updateImageElements:function(){
         this.activeElement=document.getElementById('img-list');
-        this.activeElement.style.display='inline-block';
-        var maxd=imageDim(this.config[this.currentPage].elements.length);
+        this.activeElement.style.display='block';
+        var dimensions=imageDimSquare(this.config[this.currentPage].elements.length);
+        var dim=dimensions[1];
+        console.log(dimensions);
+        var backbtn_width = document.getElementById("back-btn").offsetWidth;
+        var imgcontain_width=(Math.floor(document.getElementById("mainframe").clientWidth) - Math.ceil(backbtn_width))*0.99;
+        document.getElementById("img-list-container").style.width=imgcontain_width+"px";
         for(var i=0; i<this.config[this.currentPage].elements.length;i++){
-            div=document.createElement("li");
-            div.classList.add('cell');
+            div=document.createElement("div");
+            //div.classList.add('cell');
+            div.classList.add('col-');
             div.id="cell"+i;
-            helper=document.createElement('span');
-            helper.classList.add('helper');
+            div.style.width=100/dim[0]+"%";
+            div.style.height=100/dim[1]+"%";
+            //helper=document.createElement('span');
+            //helper.classList.add('helper');
             //spacer=document.createElement('div');
             //spacer.classList.add('spacer');
             //spacer.id='spacer'+i;
+            container=document.createElement("div");
+            container.classList.add('element-container');
             img=document.createElement('img');
             img.id="element"+i;
             img.classList.add('img');
+            img.classList.add('click-img');
             img.addEventListener('click', this.onImageClick.bind(this));
-            div.style.maxWidth = ''+maxd+'px';
-            div.style.maxHeight = ''+maxd+'px';
-            div.style.minWidth = ''+maxd*0.9+'px';
+            //div.style.maxWidth = ''+maxd+'px';
+            //div.style.maxHeight = ''+maxd+'px';
+            //div.style.minWidth = ''+maxd*0.9+'px';
             this.nexts[img.id]=this.config[this.currentPage].elements[i].next;
             this.temp_elements.push(div.id)
             //this.temp_elements.push(spacer.id)
             //div.style.backgroundImage='url("'+this.translateUri(this.config[this.currentPage].elements[i].img)+'")';
             img.src=this.translateUri(this.config[this.currentPage].elements[i].img);
-            div.appendChild(helper);
-            div.appendChild(img);
+            //div.appendChild(helper);
+            div.appendChild(container);
+            container.appendChild(img);
             this.activeElement.appendChild(div);
             //this.activeElement.appendChild(spacer);
         }
@@ -375,7 +422,7 @@ var app = {
     // TODO: return policy
     updateImage: function(){
         this.activeElement=document.getElementById("end-img-container");
-        this.activeElement.style.display="inline-block";
+        this.activeElement.style.display="block";
         imgElement=document.getElementById("end-image");
         imgElement.setAttribute("src",this.translateUri(this.config[this.currentPage].img));
     },
